@@ -1,4 +1,4 @@
-<h1 align="center">@spacelink/api-interface 👋</h1>
+<h1 align="center">@dsherwin/react-api-interface 👋</h1>
 <p>
   <img alt="Version" src="https://img.shields.io/badge/version-1.10.6-blue.svg?cacheSeconds=2592000" />
   <a href="#" target="_blank">
@@ -27,7 +27,7 @@
 ## Install
 
 ```sh
-npm install @spacelink/api-interface
+npm install @dsherwin/react-api-interface
 ```
 
 ## Description
@@ -47,7 +47,7 @@ import {
   setAPIBaseURL,
   setAuthorizationHeader,
   apiGet
-} from "@spacelink/api-interface";
+} from "@dsherwin/react-api-interface";
 import { useEffect } from "react";
 
 const App = () => {
@@ -81,7 +81,7 @@ import {
   setAPITimeout,
   enableAPILog,
   apiGet, apiPost, apiPut, apiPatch, apiDelete, apiPostForm
-} from "@spacelink/api-interface";
+} from "@dsherwin/react-api-interface";
 
 setAPIBaseURL("https://api.example.com");
 setAuthorizationHeader("Bearer <token>");
@@ -95,7 +95,7 @@ const data = await apiGet("/users", { role: "admin" });
 If you need different configs per component or scope, create an instance:
 
 ```ts
-import { useAPIInterface } from "@spacelink/api-interface";
+import { useAPIInterface } from "@dsherwin/react-api-interface";
 
 const { apiGet, setAPITimeout } = useAPIInterface(
   "https://api.example.com",
@@ -137,7 +137,7 @@ Notes:
 All failures throw APIError. Access normalized error data via error.errorData:
 
 ```ts
-import { APIError } from "@spacelink/api-interface";
+import { APIError } from "@dsherwin/react-api-interface";
 
 try {
   await apiGet("/restricted");
