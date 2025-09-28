@@ -1,6 +1,6 @@
 {
   "name": "@dsherwin/react-api-interface",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "REST API interface hook for React",
   "main": "dist/index.mjs",
   "module": "dist/index.mjs",

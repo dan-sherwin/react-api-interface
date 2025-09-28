@@ -19,6 +19,8 @@ export const setHeader = (key: string, value: string)=>{defInst.setHeader(key,va
 export const rmHeader = (key: string)=>{defInst.rmHeader(key)};
 export const clearHeaders = ()=>{defInst.clearHeaders()};
 export const setAPITimeout = (msecs: number)=>{defInst.setAPITimeout(msecs)};
+export const setIncludeCredentials = (state: boolean) => defInst.setIncludeCredentials(state);
+
 
 
 
@@ -32,12 +34,17 @@ export const setAPITimeout = (msecs: number)=>{defInst.setAPITimeout(msecs)};
  * @param enableLog Enable console logging of requests/responses for debugging.
  * @param apiTimeout Optional timeout in milliseconds for requests. 0 disables timeout.
  */
-export const useAPIInterface = (apiBaseURL?: string, authorizationHeader?: string, enableLog?: boolean, apiTimeout?: number): Omit<IAPIInterface, "whatAmI"> => {
+export const useAPIInterface = (apiBaseURL?: string, authorizationHeader?: string, enableLog?: boolean, apiTimeout?: number, includeCredentials?: boolean, headers?: {[key: string]: string}, requestPreProcessor?: ((apiRequest: IAPIRequest) => IAPIRequest), responsePostProcessor?: ((response: any) => any), errorResponsePostProcessor?: ((response: APIError) => APIError)): Omit<IAPIInterface, "whatAmI"> => {
     const inst = createAPIInterface({
         apiBaseURL: apiBaseURL??"",
         authorizationHeader: authorizationHeader,
         enableAPILog: enableLog??false,
         apiTimeout: apiTimeout ?? 0,
+        includeCredentials: includeCredentials ?? false,
+        headers: headers ?? {},
+        requestPreProcessor: requestPreProcessor ?? undefined,
+        responsePostProcessor: responsePostProcessor ?? undefined,
+        errorResponsePostProcessor: errorResponsePostProcessor ?? undefined,
     });
 
     const getAPIBaseURL = () => inst.getAPIBaseURL();
@@ -57,6 +64,7 @@ export const useAPIInterface = (apiBaseURL?: string, authorizationHeader?: strin
     const rmHeader = (key: string)=>{inst.rmHeader(key)};
     const clearHeaders = ()=>{inst.clearHeaders()};
     const setAPITimeout = (msecs: number)=>{inst.setAPITimeout(msecs)};
+    const setIncludeCredentials = (state: boolean) => inst.setIncludeCredentials(state);
     return {
         getAPIBaseURL,
         apiGet,
@@ -74,6 +82,7 @@ export const useAPIInterface = (apiBaseURL?: string, authorizationHeader?: strin
         setHeader,
         rmHeader,
         clearHeaders,
-        setAPITimeout
+        setAPITimeout,
+        setIncludeCredentials,
     }
 }

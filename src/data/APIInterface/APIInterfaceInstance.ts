@@ -5,6 +5,11 @@ export interface APIInstanceCreateOptions {
     authorizationHeader?: string;
     enableAPILog?: boolean;
     apiTimeout?: number;
+    includeCredentials?: boolean;
+    headers?: { [key: string]: string };
+    requestPreProcessor?: ((apiRequest: IAPIRequest) => IAPIRequest);
+    responsePostProcessor?: ((response: any) => any);
+    errorResponsePostProcessor?: ((response: APIError) => APIError);
 }
 
 export interface IAPIRequest {
@@ -14,6 +19,7 @@ export interface IAPIRequest {
     queryParams?: { [key: string]: string; },
     apiBaseURL?: string,
     authorizationHeader?: string
+    includeCredentials?: boolean;
 }
 
 /**
@@ -33,6 +39,16 @@ export const createAPIInterface = (options?: APIInstanceCreateOptions): IAPIInte
         inst.setAuthorizationHeader(options.authorizationHeader);
         inst.enableAPILog(options.enableAPILog ?? false);
         inst.setAPITimeout(options.apiTimeout ?? 0);
+        inst.setIncludeCredentials(options.includeCredentials ?? false);
+        inst.setRequestPreProcessor(options.requestPreProcessor);
+        inst.setResponsePostProcessor(options.responsePostProcessor);
+        inst.setErrorResponsePostProcessor(options.errorResponsePostProcessor);
+        if (options.headers) {
+            inst.clearHeaders();
+            for (const k in options.headers) {
+                inst.setHeader(k, options.headers[k]);
+            }
+        }
     }
     return inst as IAPIInterface;
 }
@@ -49,12 +65,13 @@ enum APIMETHOD {
     DELETE = "DELETE"
 }
 
-export type IAPIInterface = Omit<typeof APIInterfaceInstance, "baseURL" | "authHeader" | "logEnabled" | "headers" | "requestPreProcessor" | "responsePostProcessor"  | "errorResponsePostProcessor" | "timeoutMs" | "apiRequest" | "logRequest" | "logResponse">
+export type IAPIInterface = Omit<typeof APIInterfaceInstance, "includeCredentials" | "baseURL" | "authHeader" | "logEnabled" | "headers" | "requestPreProcessor" | "responsePostProcessor" | "errorResponsePostProcessor" | "timeoutMs" | "apiRequest" | "logRequest" | "logResponse">
 
 const APIInterfaceInstance = {
     baseURL: "",
     authHeader: "",
     logEnabled: false,
+    includeCredentials: false,
     headers: <{ [key: string]: string }>{},
     requestPreProcessor: <((apiRequest: IAPIRequest) => IAPIRequest) | undefined>undefined,
     responsePostProcessor: <((response: any) => any) | undefined>undefined,
@@ -62,6 +79,9 @@ const APIInterfaceInstance = {
     timeoutMs: 0,
     setAuthorizationHeader(authStr: string | undefined | null) {
         this.authHeader = authStr ?? "";
+    },
+    setIncludeCredentials(state: boolean) {
+        this.includeCredentials = state;
     },
     getAPIBaseURL() {
         return this.baseURL;
@@ -121,17 +141,12 @@ const APIInterfaceInstance = {
     },
     logRequest(request: IAPIRequest) {
         if (!this.logEnabled) return;
-        if (request.method == APIMETHOD.GET || request.method == APIMETHOD.DELETE) {
-            console.log("[APIInterface]", "[Request]", request.method, formatUrl(request.apiBaseURL ?? "", request.path, request.queryParams), request.authorizationHeader);
-        } else {
-            let dataStr = "";
-            if (request.data instanceof FormData) {
-                dataStr = "FormData";
-            } else {
-                dataStr = JSON.stringify(request.data)
-            }
-            console.log("[APIInterface]", "[Request]", request.method.toUpperCase(), formatUrl(request.apiBaseURL ?? "", request.path, request.queryParams), request.authorizationHeader, dataStr);
-        }
+        console.log("[APIInterface]",
+            "[Request]",
+            request.method.toUpperCase(),
+            formatUrl(request.apiBaseURL ?? "", request.path, request.queryParams),
+            request.authorizationHeader,
+            request.data ? (request.data instanceof FormData ? "FormData" : request.data) : null);
     },
     logResponse(response: Response | TypeError | DOMException, reason?: string) {
         if (!this.logEnabled) return;
@@ -182,6 +197,7 @@ const APIInterfaceInstance = {
             body: body,
             mode: "cors",
         };
+        if (self.includeCredentials) fetchOptions.credentials = "include";
         let timeoutId: NodeJS.Timeout | undefined = undefined;
         const controller = new AbortController();
         if (self.timeoutMs > 0) {
