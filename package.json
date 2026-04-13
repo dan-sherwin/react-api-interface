@@ -1,7 +1,7 @@
 {
   "name": "@dsherwin/react-api-interface",
   "version": "0.1.1",
-  "description": "REST API interface hook for React",
+  "description": "Tiny typed REST API client for React and TypeScript",
   "main": "dist/index.mjs",
   "module": "dist/index.mjs",
   "types": "dist/index.d.mts",

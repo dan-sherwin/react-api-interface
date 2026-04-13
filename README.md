@@ -1,6 +1,6 @@
 <h1 align="center">@dsherwin/react-api-interface 👋</h1>
 <p>
-  <img alt="Version" src="https://img.shields.io/badge/version-1.10.6-blue.svg?cacheSeconds=2592000" />
+  <img alt="Version" src="https://img.shields.io/badge/version-0.1.1-blue.svg?cacheSeconds=2592000" />
   <a href="#" target="_blank">
     <img alt="License: ISC" src="https://img.shields.io/badge/License-ISC-yellow.svg" />
   </a>
@@ -34,6 +34,7 @@ npm install @dsherwin/react-api-interface
 This library simplifies calling REST APIs with ergonomic methods (GET/POST/PUT/PATCH/DELETE). Success responses always return parsed JSON. All failures throw a typed APIError with normalized errorData — no more "unknown" error shapes.
 
 - Built-in base URL management, headers, and Authorization.
+- Optional cookie/credential forwarding for session-based backends.
 - Optional request timeout and abort handling.
 - Optional debug logging of requests/responses.
 - Extensible request/response processors.
@@ -46,6 +47,7 @@ import {
   useAPIInterface,
   setAPIBaseURL,
   setAuthorizationHeader,
+  setIncludeCredentials,
   apiGet
 } from "@dsherwin/react-api-interface";
 import { useEffect } from "react";
@@ -55,6 +57,7 @@ const App = () => {
   useEffect(() => {
     setAPIBaseURL("http://localhost:3500");
     setAuthorizationHeader("Bearer " + token);
+    setIncludeCredentials(true);
   }, []);
 
   const handleClick = async () => {
@@ -76,8 +79,10 @@ For simple apps, configure once and call from anywhere:
 
 ```ts
 import {
+  createAPIInterface,
   setAPIBaseURL,
   setAuthorizationHeader,
+  setIncludeCredentials,
   setAPITimeout,
   enableAPILog,
   apiGet, apiPost, apiPut, apiPatch, apiDelete, apiPostForm
@@ -85,10 +90,18 @@ import {
 
 setAPIBaseURL("https://api.example.com");
 setAuthorizationHeader("Bearer <token>");
+setIncludeCredentials(true);
 setAPITimeout(8000); // 8s
 enableAPILog(true);
 
 const data = await apiGet("/users", { role: "admin" });
+
+const isolated = createAPIInterface({
+  apiBaseURL: "https://api.example.com",
+  includeCredentials: true,
+});
+
+const users = await isolated.apiGet("/users");
 ```
 
 ### 2) React hook factory (isolated instances)
@@ -113,12 +126,14 @@ setAPITimeout(10000); // override later if needed
 - setAuthorizationHeader(authStr: string | null | undefined): void
 - enableAPILog(log: boolean): void
 - setAPITimeout(ms: number): void
+- setIncludeCredentials(state: boolean): void
 - setHeader(key: string, value: string): void
 - rmHeader(key: string): void
 - clearHeaders(): void
 - setRequestPreProcessor((req) => req): void
 - setResponsePostProcessor((res) => res): void
 - setErrorResponsePostProcessor((err: APIError) => APIError): void
+- createAPIInterface(options?): IAPIInterface
 
 ### Requests
 - apiGet(path: string, queryParams?): Promise<any>
@@ -132,6 +147,7 @@ Notes:
 - path can be absolute or relative to the configured base URL.
 - For JSON requests, Content-Type is set automatically.
 - apiPostForm sends FormData and will not set JSON Content-Type.
+- `setIncludeCredentials(true)` causes requests to use `credentials: "include"`.
 
 ### Error handling
 All failures throw APIError. Access normalized error data via error.errorData:
@@ -179,5 +195,4 @@ await apiPostForm("/upload", [{ file: myBlob, name: "avatar.png" }]);
 
 ## Author
 👤 **dsherwin**
-
 
