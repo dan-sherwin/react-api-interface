@@ -94,7 +94,7 @@ setIncludeCredentials(true);
 setAPITimeout(8000); // 8s
 enableAPILog(true);
 
-const data = await apiGet("/users", { role: "admin" });
+const data = await apiGet("/users", { role: "admin" }, { "X-Trace-Id": crypto.randomUUID() });
 
 const isolated = createAPIInterface({
   apiBaseURL: "https://api.example.com",
@@ -136,18 +136,19 @@ setAPITimeout(10000); // override later if needed
 - createAPIInterface(options?): IAPIInterface
 
 ### Requests
-- apiGet(path: string, queryParams?): Promise<any>
-- apiDelete(path: string, queryParams?): Promise<any>
-- apiPost(path: string, data?: any, queryParams?): Promise<any>
-- apiPut(path: string, data?: any, queryParams?): Promise<any>
-- apiPatch(path: string, data?: any, queryParams?): Promise<any>
-- apiPostForm(path: string, data?: Array<Record<string, string | Blob>>, queryParams?): Promise<any>
+- apiGet(path: string, queryParams?, headers?): Promise<any>
+- apiDelete(path: string, queryParams?, headers?): Promise<any>
+- apiPost(path: string, data?: any, queryParams?, headers?): Promise<any>
+- apiPut(path: string, data?: any, queryParams?, headers?): Promise<any>
+- apiPatch(path: string, data?: any, queryParams?, headers?): Promise<any>
+- apiPostForm(path: string, data?: Array<Record<string, string | Blob>>, queryParams?, headers?): Promise<any>
 
 Notes:
 - path can be absolute or relative to the configured base URL.
 - For JSON requests, Content-Type is set automatically.
 - apiPostForm sends FormData and will not set JSON Content-Type.
 - `setIncludeCredentials(true)` causes requests to use `credentials: "include"`.
+- Instance headers configured via `setHeader` are applied to all requests, and per-request `headers` override instance headers when keys overlap.
 
 ### Error handling
 All failures throw APIError. Access normalized error data via error.errorData:

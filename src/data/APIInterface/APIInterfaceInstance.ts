@@ -17,6 +17,7 @@ export interface IAPIRequest {
     path: string,
     data?: any,
     queryParams?: { [key: string]: string; },
+    headers?: { [key: string]: string; },
     apiBaseURL?: string,
     authorizationHeader?: string
     includeCredentials?: boolean;
@@ -101,16 +102,16 @@ const APIInterfaceInstance = {
     enableAPILog(logState: boolean) {
         this.logEnabled = logState;
     },
-    apiGet<T = any>(path: string, queryParams?: IQueryParams): Promise<T> {
-        return this.apiRequest<T>({method: APIMETHOD.GET, path: path, queryParams: queryParams});
+    apiGet<T = any>(path: string, queryParams?: IQueryParams, headers?: { [key: string]: string; }): Promise<T> {
+        return this.apiRequest<T>({method: APIMETHOD.GET, path: path, queryParams: queryParams, headers: headers});
     },
-    apiDelete<T = any>(path: string, queryParams?: { [key: string]: string; }): Promise<T> {
-        return this.apiRequest<T>({method: APIMETHOD.DELETE, path: path, queryParams: queryParams});
+    apiDelete<T = any>(path: string, queryParams?: { [key: string]: string; }, headers?: { [key: string]: string; }): Promise<T> {
+        return this.apiRequest<T>({method: APIMETHOD.DELETE, path: path, queryParams: queryParams, headers: headers});
     },
-    apiPost<TResp = any, TBody = unknown>(path: string, data?: TBody, queryParams?: { [key: string]: string; }): Promise<TResp> {
-        return this.apiRequest<TResp, TBody>({method: APIMETHOD.POST, path: path, data: data, queryParams: queryParams});
+    apiPost<TResp = any, TBody = unknown>(path: string, data?: TBody, queryParams?: { [key: string]: string; }, headers?: { [key: string]: string; }): Promise<TResp> {
+        return this.apiRequest<TResp, TBody>({method: APIMETHOD.POST, path: path, data: data, queryParams: queryParams, headers: headers});
     },
-    apiPostForm<TResp = any>(path: string, data?: { [key: string]: string | Blob }[], queryParams?: { [key: string]: string; }): Promise<TResp> {
+    apiPostForm<TResp = any>(path: string, data?: { [key: string]: string | Blob }[], queryParams?: { [key: string]: string; }, headers?: { [key: string]: string; }): Promise<TResp> {
         const formData = new FormData();
         if (data) {
             for (const d of data) {
@@ -119,13 +120,13 @@ const APIInterfaceInstance = {
                 }
             }
         }
-        return this.apiRequest<TResp, FormData>({method: APIMETHOD.POST, path: path, data: formData, queryParams: queryParams});
+        return this.apiRequest<TResp, FormData>({method: APIMETHOD.POST, path: path, data: formData, queryParams: queryParams, headers: headers});
     },
-    apiPut<TResp = any, TBody = unknown>(path: string, data?: TBody, queryParams?: { [key: string]: string; }): Promise<TResp> {
-        return this.apiRequest<TResp, TBody>({method: APIMETHOD.PUT, path: path, data: data, queryParams: queryParams});
+    apiPut<TResp = any, TBody = unknown>(path: string, data?: TBody, queryParams?: { [key: string]: string; }, headers?: { [key: string]: string; }): Promise<TResp> {
+        return this.apiRequest<TResp, TBody>({method: APIMETHOD.PUT, path: path, data: data, queryParams: queryParams, headers: headers});
     },
-    apiPatch<TResp = any, TBody = unknown>(path: string, data?: TBody, queryParams?: { [key: string]: string; }): Promise<TResp> {
-        return this.apiRequest<TResp, TBody>({method: APIMETHOD.PATCH, path: path, data: data, queryParams: queryParams});
+    apiPatch<TResp = any, TBody = unknown>(path: string, data?: TBody, queryParams?: { [key: string]: string; }, headers?: { [key: string]: string; }): Promise<TResp> {
+        return this.apiRequest<TResp, TBody>({method: APIMETHOD.PATCH, path: path, data: data, queryParams: queryParams, headers: headers});
     },
     setHeader(key: string, value: string): void {
         this.headers[key] = value;
@@ -172,7 +173,7 @@ const APIInterfaceInstance = {
         reqData.authorizationHeader = self.authHeader;
         reqData.apiBaseURL = self.baseURL;
         if (this.requestPreProcessor) reqData = this.requestPreProcessor(reqData);
-        const {method, path, data, queryParams, apiBaseURL, authorizationHeader} = reqData;
+        const {method, path, data, queryParams, headers, apiBaseURL, authorizationHeader} = reqData;
         this.logRequest(reqData);
 
         const myHeaders = new Headers();
@@ -181,6 +182,9 @@ const APIInterfaceInstance = {
         }
         if (authorizationHeader) myHeaders.set("Authorization", authorizationHeader);
         Object.entries(self.headers).forEach(([k, v]) => myHeaders.set(k, v));
+        if (headers) {
+            Object.entries(headers).forEach(([k, v]) => myHeaders.set(k, v));
+        }
         let body: string | undefined | FormData = undefined;
         if (method != APIMETHOD.GET && method != APIMETHOD.DELETE && data) {
             if (data instanceof FormData) {

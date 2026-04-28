@@ -1,6 +1,6 @@
 {
   "name": "@dsherwin/react-api-interface",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Tiny typed REST API client for React and TypeScript",
   "main": "dist/index.mjs",
   "module": "dist/index.mjs",
@@ -8,7 +8,8 @@
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "test": "npm run build && node --test test/**/*.test.mjs"
   },
   "author": "dsherwin",
   "license": "ISC",
